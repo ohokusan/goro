@@ -97,6 +97,7 @@ func (m *WorldMode) humanoidSpriteViewForActor(ctx client.Context, actor world.A
 	actor = actorWithVisualJob(actor)
 	weapon, shield := res.NormalizePlayerWeaponShield(int(actor.Weapon), int(actor.Shield))
 	key := actorSpriteKey{
+		cashMounted: actor.CashMounted && actor.Job == 0,
 		job:         int(actor.Job),
 		head:        int(actor.Head),
 		sex:         actor.Sex,

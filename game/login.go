@@ -552,6 +552,7 @@ func (m *LoginMode) applyLoginStatusEffectPacket(ctx client.Context, pkt network
 	if !ok {
 		return false
 	}
+	applyCashMountStatus(ctx, change)
 	applyActorOpt3StateStatus(ctx, change)
 	if applyLocalStatusEffectChange(ctx.Session, change, time.Now()) {
 		glog.Debugf("login status effect id=%d actor=%d active=%t duration_ms=%d", change.StatusID, change.ActorID, change.Active, change.Duration.Milliseconds())

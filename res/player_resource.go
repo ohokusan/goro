@@ -498,3 +498,13 @@ func PlayerShieldToken(shield int) string {
 	}
 	return db.ShieldResourceName[viewID]
 }
+
+// PlayerCashMountResourceCandidates names only the custom Novice body pair.
+// It deliberately has no ordinary-body candidates: ACT and SPR must match.
+func PlayerCashMountResourceCandidates(sex byte, extension string) []string {
+	name := "female"
+	if sex == 1 {
+		name = "male"
+	}
+	return []string{fmt.Sprintf("data\\sprite\\custom\\poring_novice_%s.%s", name, extension)}
+}

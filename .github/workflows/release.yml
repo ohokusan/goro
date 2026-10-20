@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  workflow_dispatch:
+  push:
+    branches: [feat/poring-cash-mount]
   release:
     types: [created]
 
@@ -9,6 +12,7 @@ permissions:
 
 jobs:
   build:
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -62,6 +66,7 @@ jobs:
           files: dist/${{ matrix.name }}
 
   android:
+    if: github.event_name == 'release'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -85,3 +90,29 @@ jobs:
         with:
           files: dist/android/goro-android-arm64.apk
           fail_on_unmatched_files: true
+
+  cash-mount-macos:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CGO_ENABLED: "0"
+      GOFLAGS: "-tags=nofakecgo"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Test Cash Mount support and related packages
+        run: go test ./game ./world ./res ./network
+      - name: Test converted ACT anchor repair
+        run: python3 -m unittest discover -s tools -p test_fix_poring_mount_anchors.py -v
+      - name: Compile macOS ARM64
+        run: GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o dist/goro-osx-arm64 .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: goro-macos-arm64-cash-mount
+          path: dist/goro-osx-arm64
+          if-no-files-found: error

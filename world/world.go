@@ -136,6 +136,8 @@ type Actor struct {
 	Opt3State        uint32
 	SpiritSpheres    uint16
 	HasSpiritSpheres bool
+	CashMounted      bool // EFST_ALL_RIDING, independent of option snapshots.
+	HasCashMount     bool
 	HasState         bool
 	Level            int
 	HasLevel         bool
@@ -194,6 +196,10 @@ func (w *World) UpsertActor(actor Actor) {
 		return
 	}
 	if existing, ok := w.Actors[actor.ID]; ok {
+		if !actor.HasCashMount {
+			actor.CashMounted = existing.CashMounted
+			actor.HasCashMount = existing.HasCashMount
+		}
 		if !actor.HasSpiritSpheres {
 			actor.SpiritSpheres = existing.SpiritSpheres
 			actor.HasSpiritSpheres = existing.HasSpiritSpheres
