@@ -101,7 +101,7 @@ func ints(s string) []int {
 func (l *loader) scriptFile(path string) error {
 	b, err := l.read(path)
 	if err != nil {
-		return fmt.Errorf("Guide cannot read enabled NPC file %s", path)
+		return fmt.Errorf("guide cannot read enabled NPC file %s", path)
 	}
 	depth := 0
 	quoted, escape := false, false

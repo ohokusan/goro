@@ -45,7 +45,7 @@ func Load(root, mode string) (*Snapshot, error) {
 		l.s.Mode = mode
 	}
 	if mode != "pre-re" && mode != "re" {
-		return nil, fmt.Errorf("Guide mode must be auto, pre-re or re")
+		return nil, fmt.Errorf("guide mode must be auto, pre-re or re")
 	}
 	// Import graph readers retain only whitelisted public metadata.
 	if err := l.config("conf/map_athena.conf", func(k, v string) {
@@ -63,7 +63,7 @@ func Load(root, mode string) (*Snapshot, error) {
 		return nil, err
 	}
 	if l.sql {
-		return nil, fmt.Errorf("Guide cannot read SQL-backed monster/item databases")
+		return nil, fmt.Errorf("guide cannot read SQL-backed monster/item databases")
 	}
 	source, err := l.read("src/map/battle.cpp")
 	if err != nil {
@@ -142,7 +142,7 @@ func (l *loader) config(path string, accept func(string, string)) error {
 	defer delete(l.active, path)
 	b, err := l.read(path)
 	if err != nil {
-		return fmt.Errorf("Guide cannot read configuration %s", path)
+		return fmt.Errorf("guide cannot read configuration %s", path)
 	}
 	scan := bufio.NewScanner(strings.NewReader(stripComments(string(b))))
 	for scan.Scan() {
@@ -173,7 +173,7 @@ func (l *loader) database(path string, optional bool) error {
 		if optional && os.IsNotExist(err) {
 			return nil
 		}
-		return fmt.Errorf("Guide cannot read database %s", path)
+		return fmt.Errorf("guide cannot read database %s", path)
 	}
 	var d struct {
 		Header struct {
