@@ -258,3 +258,15 @@ func TestPlayerAccessoryResourceCandidates(t *testing.T) {
 		t.Fatalf("accessory overlay = %q, want %q", got, want)
 	}
 }
+
+func TestPlayerCashMountResourceCandidatesUseExactLocalFilenames(t *testing.T) {
+	for sex, name := range map[byte]string{0: "female", 1: "male"} {
+		for _, extension := range []string{"act", "spr"} {
+			got := PlayerCashMountResourceCandidates(sex, extension)
+			want := "data\\sprite\\custom\\poring_novice_" + name + "." + extension
+			if len(got) != 1 || got[0] != want {
+				t.Fatalf("sex=%d extension=%s paths=%q want %q", sex, extension, got, want)
+			}
+		}
+	}
+}

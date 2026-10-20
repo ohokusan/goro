@@ -1440,6 +1440,7 @@ func (m *WorldMode) drawActorSprite3D(screen *render.Frame, ctx client.Context, 
 	}
 	weapon, shield := res.NormalizePlayerWeaponShield(int(actor.Weapon), int(actor.Shield))
 	key := actorSpriteKey{
+		cashMounted: actor.CashMounted && actor.Job == 0,
 		job:         int(actor.Job),
 		head:        int(actor.Head),
 		sex:         actor.Sex,

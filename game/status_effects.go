@@ -17,6 +17,13 @@ func (m *WorldMode) applyStatusEffectChange(ctx client.Context, change network.S
 	if m.applyPushCartStatus(ctx, change) {
 		return
 	}
+	if change.StatusID == db.StatusAllRiding {
+		applyLocalStatusEffectChange(ctx.Session, change, time.Now())
+		if applyCashMountStatus(ctx, change) {
+			m.reloadPlayerSpriteView(ctx, "cash mount status")
+		}
+		return
+	}
 	m.applyFalconStatus(ctx, change)
 	if actorID := applyActorOpt3StateStatus(ctx, change); actorID != 0 {
 		m.syncActorSpiritEffects(ctx, actorID)

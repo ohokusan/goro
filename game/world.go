@@ -322,6 +322,7 @@ func (m *WorldMode) KeyboardShortcutsBlocked(ctx client.Context) bool {
 }
 
 type actorSpriteKey struct {
+	cashMounted bool
 	job         int
 	head        int
 	sex         byte
@@ -518,7 +519,7 @@ func (m *WorldMode) Enter(ctx client.Context) Mode {
 	playerStatus := ""
 	character := ctx.Session.SelectedCharacter()
 	visualCharacter := localPlayerVisualCharacter(ctx)
-	if view, status := loadPlayerHumanoidSpriteView(ctx.Resources, visualCharacter, ctx.Session.Sex, localPlayerIsAdmin(ctx)); view != nil {
+	if view, status := loadPlayerHumanoidSpriteView(ctx.Resources, visualCharacter, ctx.Session.Sex, localPlayerIsAdmin(ctx), localPlayerCashMounted(ctx)); view != nil {
 		m.playerView = view
 		playerStatus = status
 	} else {

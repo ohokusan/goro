@@ -4,6 +4,7 @@ import (
 	"github.com/kivutar/goro/client"
 	"github.com/kivutar/goro/db"
 	"github.com/kivutar/goro/glog"
+	"github.com/kivutar/goro/network"
 	"github.com/kivutar/goro/session"
 	worldstate "github.com/kivutar/goro/world"
 )
@@ -64,7 +65,7 @@ func (m *WorldMode) reloadPlayerSpriteView(ctx client.Context, reason string) {
 		return
 	}
 	character := localPlayerVisualCharacter(ctx)
-	view, status := loadPlayerHumanoidSpriteView(ctx.Resources, character, ctx.Session.Sex, localPlayerIsAdmin(ctx))
+	view, status := loadPlayerHumanoidSpriteView(ctx.Resources, character, ctx.Session.Sex, localPlayerIsAdmin(ctx), localPlayerCashMounted(ctx))
 	if view != nil {
 		m.playerView = view
 		glog.Debugf("player sprite reloaded reason=%s visual_job=%d %s", reason, character.Job, status)
@@ -72,4 +73,38 @@ func (m *WorldMode) reloadPlayerSpriteView(ctx client.Context, reason string) {
 	}
 	glog.Warnf("player sprite reload failed reason=%s visual_job=%d: %s", reason, character.Job, status)
 	m.playerView = nil
+}
+
+// Local status storage survives world entry, when Player may be reconstructed.
+func localPlayerCashMounted(ctx client.Context) bool {
+	if ctx.Session == nil {
+		return false
+	}
+	_, active := ctx.Session.Statuses.Active[db.StatusAllRiding]
+	return active
+}
+
+// Returns whether the local body needs refreshing. Cash mounting is an EFST,
+// not an option bit: subsequent ordinary option snapshots must not clear it.
+func applyCashMountStatus(ctx client.Context, change network.StatusEffectChange) bool {
+	if change.StatusID != db.StatusAllRiding || ctx.World == nil {
+		return false
+	}
+	id := change.ActorID
+	if id == 0 {
+		id = localSkillTarget(ctx)
+	}
+	actor, ok, local := actorForCombatID(ctx, id)
+	if !ok {
+		return false
+	}
+	changed := actor.CashMounted != change.Active
+	actor.CashMounted, actor.HasCashMount = change.Active, true
+	if local {
+		ctx.World.Player.CashMounted = change.Active
+		ctx.World.Player.HasCashMount = true
+	} else {
+		ctx.World.UpsertActor(actor)
+	}
+	return local && changed
 }

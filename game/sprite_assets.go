@@ -11,9 +11,10 @@ import (
 	"github.com/kivutar/goro/session"
 )
 
-func loadPlayerHumanoidSpriteView(manager *res.Manager, character session.Character, sex byte, admin bool) (*humanoidSpriteView, string) {
+func loadPlayerHumanoidSpriteView(manager *res.Manager, character session.Character, sex byte, admin bool, cashMounted ...bool) (*humanoidSpriteView, string) {
 	weapon, shield := res.NormalizePlayerWeaponShield(int(character.Weapon), int(character.Shield))
 	return loadHumanoidSpriteViewWithAppearance(manager, humanoidAppearance{
+		cashMounted: len(cashMounted) > 0 && cashMounted[0] && character.Job == 0,
 		job:         int(character.Job),
 		head:        int(character.Hair),
 		sex:         sex,
@@ -72,12 +73,16 @@ func characterHeadPalette(character session.Character) int {
 }
 
 func loadHumanoidSpriteViewWithAppearance(manager *res.Manager, appearance humanoidAppearance, label string) (*humanoidSpriteView, string) {
-	body, bodyStatus := loadBodySpriteView(manager, appearance.job, appearance.sex, appearance.bodyPalette, appearance.admin, label+" body")
+	body, bodyStatus, mounted := loadCashMountOrBodySpriteView(manager, appearance, label)
 	if body == nil {
 		return nil, bodyStatus
 	}
 	headView, headStatus := loadHeadSpriteView(manager, appearance.job, appearance.head, appearance.sex, appearance.headPalette, label+" head")
-	imf, imfSource, imfStatus := loadPlayerIMF(manager, appearance.job, appearance.sex)
+	var imf *res.IMF
+	var imfSource, imfStatus string
+	if !mounted {
+		imf, imfSource, imfStatus = loadPlayerIMF(manager, appearance.job, appearance.sex)
+	}
 	accessoryBottom, accessoryBottomStatus := loadAccessorySpriteView(manager, appearance.job, appearance.head, appearance.sex, appearance.headLow, "", label+" accessory-bottom")
 	accessoryMid, accessoryMidStatus := loadAccessorySpriteView(manager, appearance.job, appearance.head, appearance.sex, appearance.headMid, "", label+" accessory-mid")
 	accessoryTop, accessoryTopStatus := loadAccessorySpriteView(manager, appearance.job, appearance.head, appearance.sex, appearance.headTop, "", label+" accessory-top")
@@ -85,6 +90,7 @@ func loadHumanoidSpriteViewWithAppearance(manager *res.Manager, appearance human
 	weaponLight, weaponLightStatus := loadWeaponOverlaySpriteView(manager, appearance.job, appearance.sex, appearance.weapon, true, label+" weapon-light")
 	shield, shieldStatus := loadShieldOverlaySpriteView(manager, appearance.job, appearance.sex, appearance.shield, label+" shield")
 	view := &humanoidSpriteView{
+		cashMounted:     mounted,
 		body:            body,
 		head:            headView,
 		accessoryBottom: accessoryBottom,

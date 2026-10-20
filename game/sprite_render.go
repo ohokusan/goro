@@ -92,6 +92,7 @@ type petAccessorySpriteKey struct {
 }
 
 type humanoidSpriteView struct {
+	cashMounted     bool // Accepted custom body; uses ACT anchors and animated idle.
 	body            *spriteView
 	head            *spriteView
 	accessoryBottom *spriteView
@@ -107,6 +108,7 @@ type humanoidSpriteView struct {
 }
 
 type humanoidAppearance struct {
+	cashMounted bool
 	job         int
 	head        int
 	sex         byte
@@ -432,7 +434,12 @@ func humanoidBillboardForState(view *humanoidSpriteView, state spriteState, now 
 	if !ok || len(bodyAction.Animations) == 0 {
 		return nil, false
 	}
-	bodyMotion := bodyMotionForState(bodyAction, state, view.started, now)
+	bodyState := state
+	if view.cashMounted {
+		bodyState.headTurn = false
+		bodyState.loopIdle = true
+	}
+	bodyMotion := bodyMotionForState(bodyAction, bodyState, view.started, now)
 	headMotion := 0
 	if view.head != nil {
 		if _, headAction, headOK := resolveSpriteAction(view.head.act, state.actionFamily, state.direction); headOK && len(headAction.Animations) > 0 {
