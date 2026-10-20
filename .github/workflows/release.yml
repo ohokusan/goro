@@ -3,7 +3,7 @@ name: Release
 on:
   workflow_dispatch:
   push:
-    branches: [feat/poring-cash-mount]
+    branches: [feat/poring-cash-mount, feat/native-guide]
   release:
     types: [created]
 
@@ -91,7 +91,7 @@ jobs:
           files: dist/android/goro-android-arm64.apk
           fail_on_unmatched_files: true
 
-  cash-mount-macos:
+  macos-preview:
     if: github.event_name != 'release'
     runs-on: ubuntu-latest
     permissions:
@@ -105,14 +105,18 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Test Cash Mount support and related packages
-        run: go test ./game ./world ./res ./network
+      - name: Test Guide, Cash Mount support and related packages
+        run: go test ./guide ./ui ./config ./game ./world ./res ./network ./cmd/guide-export
       - name: Test converted ACT anchor repair
         run: python3 -m unittest discover -s tools -p test_fix_poring_mount_anchors.py -v
       - name: Compile macOS ARM64
         run: GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o dist/goro-osx-arm64 .
+      - name: Compile read-only metadata diagnostic
+        run: GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o dist/guide-export-osx-arm64 ./cmd/guide-export
       - uses: actions/upload-artifact@v7
         with:
-          name: goro-macos-arm64-cash-mount
-          path: dist/goro-osx-arm64
+          name: goro-macos-arm64-preview
+          path: |
+            dist/goro-osx-arm64
+            dist/guide-export-osx-arm64
           if-no-files-found: error

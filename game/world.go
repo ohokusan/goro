@@ -189,6 +189,7 @@ type worldUI struct {
 	vendingWindow        gameui.VendingWindow
 	itemWindows          gameui.ItemWindows
 	monsterInfoWindow    gameui.MonsterInfoWindow
+	guideWindow          gameui.GuideWindow
 	identifyWindow       gameui.IdentifyWindow
 	cardWindow           gameui.CardCompositionWindow
 	makingArrow          gameui.MakingArrowWindow
@@ -258,6 +259,7 @@ func (u *worldUI) nonConsoleKeyboardInputBlockedExcept(ctx client.Context, excep
 		u.chatShortcuts.IsOpen() ||
 		u.worldMap.IsOpen() ||
 		u.monsterInfoWindow.IsOpen() ||
+		u.guideWindow.KeyboardShortcutsBlocked() ||
 		u.identifyWindow.IsOpen() ||
 		u.cardWindow.IsOpen() ||
 		u.makingArrow.IsOpen() ||
@@ -611,6 +613,7 @@ func (m *WorldMode) rebindPersistentUI(ctx client.Context) {
 	m.ui.skillWindow.Rebind(ctx, m)
 	m.ui.questWindow.Rebind(ctx, func(id uint32, active bool) { m.setQuestActive(ctx, id, active) })
 	m.ui.worldMap.Rebind(ctx)
+	m.ui.guideWindow.Rebind(ctx)
 	m.ui.levelUpNotifications.Rebind(ctx)
 	m.ui.emoteWindow.OnSelect = m.ui.chatShortcuts.SelectEmotion
 	m.ui.emoteWindow.Rebind(ctx, &m.ui.console)
@@ -738,6 +741,7 @@ func (m *WorldMode) Update(ctx client.Context) (Mode, error) {
 	m.ui.console.UpdatePresentation(ctx)
 	m.ui.questWindow.UpdatePresentation(ctx, now)
 	m.ui.worldMap.UpdatePresentation(ctx)
+	m.presentGuide(ctx)
 	if progressBlocksActions {
 		return nil, nil
 	}
@@ -970,6 +974,9 @@ func (m *WorldMode) Update(ctx client.Context) (Mode, error) {
 		return nil, nil
 	}
 	if m.ui.weaponRefine.Update(ctx) {
+		return nil, nil
+	}
+	if m.ui.guideWindow.Update(ctx) {
 		return nil, nil
 	}
 	// Let the atlas close on Escape before the console handles that key.
@@ -1305,6 +1312,7 @@ func (m *WorldMode) openEscapeMenuFromInput(ctx client.Context) bool {
 
 func (m *WorldMode) basicMenuCallbacks(ctx client.Context) gameui.BasicMenuCallbacks {
 	return gameui.BasicMenuCallbacks{
+		OnGuide:  func() { m.ui.guideWindow.Toggle(ctx); m.presentGuide(ctx) },
 		OnStatus: func() { m.ui.statsWindow.Toggle(ctx) },
 		OnOption: func() { m.ui.escapeMenu.Toggle(ctx) },
 		OnItems:  func() { m.ui.inventoryBag.Toggle(ctx) },
