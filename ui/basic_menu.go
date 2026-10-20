@@ -11,7 +11,7 @@ const (
 	basicMenuX         = windowScreenMargin
 	basicMenuY         = characterWindowY + characterWindowHeight + basicMenuFollowGap
 	basicMenuFollowGap = 2
-	basicMenuToggleH   = 10
+	basicMenuToggleH   = 18
 	basicMenuToggleGap = 2
 	basicMenuCols      = 4
 	basicMenuRows      = 2
@@ -30,6 +30,7 @@ type BasicMenu struct {
 }
 
 type BasicMenuCallbacks struct {
+	OnGuide  func()
 	OnStatus func()
 	OnOption func()
 	OnItems  func()
@@ -188,8 +189,13 @@ func (m *BasicMenu) widgetTree() widget.Widget {
 	toggle := rotheme.IconButton(kind, m.toggleCollapsed).
 		Width(float32(width)).Height(basicMenuToggleH).
 		CrossAlign(primitives.CrossAxisStretch)
+	launcher := primitives.HBox(primitives.Expanded(toggle), rotheme.Button("Guide", func() {
+		if m.callbacks.OnGuide != nil {
+			m.callbacks.OnGuide()
+		}
+	}).Width(60).Height(basicMenuToggleH)).Gap(3).Height(basicMenuToggleH)
 	if m.collapsed {
-		m.content = toggle
+		m.content = launcher
 		return m.content
 	}
 	rows := make([]widget.Widget, 0, basicMenuRows)
@@ -223,7 +229,8 @@ func (m *BasicMenu) widgetTree() widget.Widget {
 				CrossAlign(primitives.CrossAxisStretch),
 		),
 	)
-	m.content = primitives.Box(toggle, panel).
+
+	m.content = primitives.Box(launcher, panel).
 		Width(float32(width)).Height(float32(height)).
 		Gap(basicMenuToggleGap).CrossAlign(primitives.CrossAxisStretch)
 	return m.content

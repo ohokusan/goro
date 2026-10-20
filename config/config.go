@@ -16,9 +16,11 @@ import (
 
 type Config struct {
 	// ConfigPath is the absolute file path selected by LoadConfig for saving settings.
-	ConfigPath string
-	Headless   bool
-	DataDir    string
+	ConfigPath      string
+	GuideServerRoot string
+	GuideMode       string
+	Headless        bool
+	DataDir         string
 	// AIStateDir holds writable AI overrides when a platform uses read-only assets.
 	// Empty keeps the desktop behavior of writing inside DataDir.
 	AIStateDir    string
@@ -342,6 +344,8 @@ func parseCLI(cfg *Config, args []string) error {
 	fs.StringVar(&cfg.ConfigPath, "config", cfg.ConfigPath, "path to goro ini configuration (also used to save settings)")
 	fs.BoolVar(&cfg.Headless, "headless", false, "run without a window or audio (implies autologin)")
 	fs.StringVar(&cfg.DataDir, "data-dir", cfg.DataDir, "Ragnarok data directory (loads goro.ini from this directory)")
+	fs.StringVar(&cfg.GuideServerRoot, "guide-server-root", cfg.GuideServerRoot, "local rAthena source directory (default ~/rathena)")
+	fs.StringVar(&cfg.GuideMode, "guide-mode", cfg.GuideMode, "Guide rules: auto, pre-re or re")
 	fs.StringVar(&cfg.Window.Title, "title", cfg.Window.Title, "window title")
 	fs.IntVar(&cfg.Window.Width, "width", cfg.Window.Width, "window width")
 	fs.IntVar(&cfg.Window.Height, "height", cfg.Window.Height, "window height")
@@ -468,6 +472,10 @@ func applyConfigValue(cfg *Config, section, key, value string) error {
 	switch section + "." + key {
 	case ".datadir", "data.dir", "data.datadir", "config.datadir", "core.datadir":
 		cfg.DataDir = value
+	case "guide.serverroot":
+		cfg.GuideServerRoot = value
+	case "guide.mode":
+		cfg.GuideMode = value
 	case "window.title":
 		cfg.Window.Title = value
 	case "window.width":
